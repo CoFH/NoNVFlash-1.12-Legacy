@@ -1,0 +1,19 @@
+[
+	{
+		"modid": "nonvflash",
+		"name": "No Night Vision Flashing",
+		"description": "Hate Night Vision flashing when it has less than 10 seconds remaining? We do too, so this mod removes it - no more flashing!",
+		"version": "${version}",
+		"credits": "Team CoFH",
+		"logoFile": "assets/nonvflash/textures/logo.png",
+		"mcversion": "${mc_version}",
+		"url": "http://www.teamcofh.com",
+		"updateUrl": "",
+		"authorList": [ "Team CoFH" ],
+		"parent": "",
+		"screenshots": [],
+		"dependencies": [
+			"forge"
+		]
+	}
+]

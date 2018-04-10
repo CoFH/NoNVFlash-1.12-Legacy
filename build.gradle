@@ -1,0 +1,140 @@
+buildscript {
+	repositories {
+		jcenter()
+		maven {
+			name = "forge"
+			url = "http://files.minecraftforge.net/maven"
+		}
+	}
+	dependencies {
+		classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
+	}
+}
+
+apply plugin: 'java'
+apply plugin: 'net.minecraftforge.gradle.forge'
+apply plugin: 'maven'
+
+group = "cofh"
+archivesBaseName = "NoNVFlash"
+
+targetCompatibility = "1.8"
+sourceCompatibility = "1.8"
+
+// Define properties file
+ext.configFile = file "build.properties"
+
+configFile.withReader {
+	// Load config. It shall from now be referenced as simply config or project.config
+	def prop = new Properties()
+	prop.load(it)
+	project.ext.config = new ConfigSlurper().parse prop
+}
+
+version = "${project.config.mod_version}." + (System.getenv("BUILD_NUMBER") ?: "1")
+
+println config.mc_version + "-" + config.forge_version
+// Setup the Forge/Minecraft plugin data. Specify the preferred Forge/Minecraft version here.
+minecraft {
+	version = config.mc_version + "-" + config.forge_version
+	mappings = config.mappings
+	runDir = "run"
+	replace '${mod_version}', project.config.mod_version
+	makeObfSourceJar = false
+}
+
+processResources {
+	inputs.property "version", project.version
+	inputs.property "mc_version", project.config.mc_version
+
+	from(sourceSets.main.resources.srcDirs) {
+		include 'mcmod.info'
+		expand 'version': project.version, 'mc_version': project.config.mc_version
+	}
+	rename '(.+_at.cfg)', 'META-INF/$1'
+}
+
+version = "${project.minecraft.version}-${project.version}"
+def commonManifest = {
+	attributes 'FMLAT': 'nonvflash_at.cfg'
+}
+
+jar {
+	classifier = 'universal'
+	manifest commonManifest
+}
+
+task deobfJar(type: Jar) {
+	from sourceSets.main.output
+	classifier = 'deobf'
+	manifest commonManifest
+}
+
+task srcJar(type: Jar) {
+	from sourceSets.main.allSource
+	classifier = 'sources'
+	manifest commonManifest
+}
+
+// Tell artifact system about extra jars.
+artifacts {
+	archives deobfJar
+	archives srcJar
+}
+
+// Configure upload task.
+uploadArchives {
+	repositories {
+		mavenDeployer {
+			if (project.hasProperty("local_maven") || project.hasProperty("maven_pass")) {
+				if (project.hasProperty("maven_pass")) {
+					println "Uploading to remote maven."
+					repository(url: "http://maven_upload.covers1624.net/") {
+						authentication(userName: "cofh", password: project.getProperty("maven_pass"))
+					}
+				} else {
+					println "Uploading to local maven."
+					repository(url: "file://${local_maven}")
+				}
+				pom {
+					groupId = project.group
+					// Force Maven upload to use the <mcversion>-<version> syntax.
+					artifactId = project.archivesBaseName
+					project {
+						name project.archivesBaseName
+						packaging 'jar'
+						description 'NoNVFlash'
+						url 'https://github.com/CoFH/NoNVFlash'
+
+						scm {
+							url 'https://github.com/CoFH/NoNVFlash'
+							connection 'scm:git:git://github.com/CoFH/NoNVFlash.git'
+							developerConnection 'scm:git:git@github.com:CoFH/NoNVFlash.git'
+						}
+
+						issueManagement {
+							system 'github'
+							url 'https://github.com/CoFH/Feedback/issues'
+						}
+
+						licenses {
+							license {
+								name "CoFH Don't Be a Jerk License"
+								url 'https://github.com/CoFH/NoNVFlash/blob/master/README.md'
+								distribution 'repo'
+							}
+						}
+
+						developers {
+							developer {
+								id 'TeamCoFH'
+								name 'TeamCoFH'
+								roles { role 'developer' }
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
