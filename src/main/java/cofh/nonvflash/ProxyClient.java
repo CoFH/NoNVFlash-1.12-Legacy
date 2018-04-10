@@ -4,6 +4,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.EntityRenderer;
 import net.minecraft.client.resources.SimpleReloadableResourceManager;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.init.MobEffects;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 
 public class ProxyClient extends Proxy {
@@ -24,7 +25,11 @@ public class ProxyClient extends Proxy {
 			@Override
 			public float getNightVisionBrightness(EntityLivingBase entitylivingbaseIn, float partialTicks) {
 
-				return 1.0F;
+				if (!NoNVFlash.fadeOut) {
+					return 1.0F;
+				}
+				int i = entitylivingbaseIn.getActivePotionEffect(MobEffects.NIGHT_VISION).getDuration();
+				return i > NoNVFlash.fadeTicks ? 1.0F : i * NoNVFlash.fadeRate;
 			}
 		};
 		manager.registerReloadListener(Minecraft.getMinecraft().entityRenderer);
