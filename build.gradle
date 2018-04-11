@@ -31,7 +31,7 @@ configFile.withReader {
 	project.ext.config = new ConfigSlurper().parse prop
 }
 
-version = "${project.config.mod_version}." + (System.getenv("BUILD_NUMBER") ?: "2")
+version = "${project.config.mod_version}." + (System.getenv("BUILD_NUMBER") ?: "3")
 
 println config.mc_version + "-" + config.forge_version
 // Setup the Forge/Minecraft plugin data. Specify the preferred Forge/Minecraft version here.
